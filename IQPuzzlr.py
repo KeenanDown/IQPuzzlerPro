@@ -1,5 +1,5 @@
 import numpy as np
-import copy
+import copy as cp
 import time
 
 checked_module = True
@@ -27,6 +27,9 @@ class piece:
         # Use the shape to make a new matrix specifying a nonzero location.
         self.nz_location = tuple(np.transpose(np.nonzero(self.shape))[0])
 
+    def __str__(self):
+        return self.shape.__str__()
+
 
 def rotate_matrix(mat, number_of_times):
     """Rotate a numpy matrix a number of times anticlockwise.
@@ -53,7 +56,7 @@ def rotate_matrix(mat, number_of_times):
         n = n + 1
     return return_matrix
 
-def rotate_piece(piece, number_of_times = 0):
+def rotate_piece(piece_g, number_of_times = 0):
     """Rotate a numpy matrix a number of times anticlockwise.
 
     Args:
@@ -65,19 +68,19 @@ def rotate_piece(piece, number_of_times = 0):
     """
 
     # Check the types.
-    check_type(piece, piece)
+    check_type(piece_g, piece)
 
     # Make a copy so that the piece is not mutable.
-    new_piece = copy(piece)
+    new_piece = cp.copy(piece_g)
 
     # Change the shape.
-    new_piece.shape = rotate_matrix(new_piece.shape)
+    new_piece.shape = rotate_matrix(new_piece.shape, number_of_times)
 
     # Change the zero location.
     new_piece.nz_location = tuple(np.transpose(np.nonzero(new_piece.shape))[0])
     return new_piece
 
-def flip(mat, Bool = False):
+def flip_matrix(mat, Bool = False):
     """Transpose a matrix if 'Bool' is true.
 
     Args:
@@ -125,8 +128,8 @@ def add_matrix(matrix_to_add, base_matrix, row, col):
     if col < 0 or col > base_matrix.shape[1] - matrix_to_add.shape[1]:
         raise ValueError("'matrix_to_add' cannot be placed at this column.")
 
-    addmat = copy.copy(matrix_to_add) # Do not alter the inputs.
-    basemat = copy.copy(base_matrix) # Do not alter the inputs. Make immuting.
+    addmat = cp.copy(matrix_to_add) # Do not alter the inputs.
+    basemat = cp.copy(base_matrix) # Do not alter the inputs. Make immuting.
 
     # Add the smaller matrix at the correct location.
     np.add(basemat[row:row+addmat.shape[0], col:col+addmat.shape[1]], addmat, out=basemat[row:row+addmat.shape[0], col:col+addmat.shape[1]], casting="unsafe")
@@ -147,36 +150,6 @@ def check_type(object, type_specified):
 
     return True
 
-class configuration:
-    """Define a configuration, a data structure containing a board and
-    a piece at a location on that board.
-
-    Attributes:
-        board_g (board): A board in which the piece is placed.
-        piece_g (piece): A piece which is in the desired configuration.
-        row (int): The row representing where the piece is placed.
-        col (int): The column representing where the piece is placed.
-        rot (int): How many times the piece is rotated.
-        flip (bool): Whether or not the piece is transposed.
-
-    Notes:
-        Transposition is done before rotation.
-    """
-    def __init__(self, board_g, piece_g, row, col, flip = False, rot = 0):
-        # Check various object types.
-        check_type(board_g, board)
-        check_type(piece_g, piece)
-        check_type(row, int)
-        check_type(col, int)
-        check_type(rot, int)
-        check_type(flip, bool)
-
-        self.board = board_g
-        self.piece = piece_g
-        self.row = row
-        self.col = col
-        self.rot = rot
-        self.flip = flip
 
 
 class board:
@@ -196,6 +169,53 @@ class board:
         if not(set(arr).issubset(set([0,1]))):
             raise ValueError("Elements in the initial board matrix can be only zero or one.")
 
+    def __str__(self):
+        return self.shape.__str__()
+
+
+class configuration:
+    """Define a configuration, a data structure containing a board and
+    a piece at a location on that board.
+
+    Attributes:
+        board_g (board): A board in which the piece is placed.
+        piece_g (piece): A piece which is in the desired configuration.
+        row (int): The row representing where the piece is placed.
+        col (int): The column representing where the piece is placed.
+        rot (int): How many times the piece is rotated.
+        flip (bool): Whether or not the piece is transposed.
+
+    Notes:
+        Transposition is done before rotation.
+    """
+    def __init__(self, board_g = board(), piece_g = np.matrix([1]), row = 0, col = 0, flip = False, rot = 0):
+        # Check various object types.
+        check_type(board_g, board)
+        check_type(piece_g, piece)
+        check_type(row, int)
+        check_type(col, int)
+        check_type(rot, int)
+        check_type(flip, bool)
+
+        self.board = board_g
+        self.piece = piece_g
+        self.row = row
+        self.col = col
+        self.rot = rot
+        self.flip = flip
+
+        # Rotate the piece.
+        self.rotatedpiece = rotate_piece(self.piece, self.rot)
+
+        # Flip after rotating the piece.
+        self.piecestate = piece(flip_matrix(self.rotatedpiece.shape, self.flip))
+
+        # Add the piece to the board and save it.
+        self.state = add_matrix(self.piecestate.shape, self.board.shape, row, col)
+
+    def __str__(self):
+        return self.state.__str__()
+
 
 # Define the standard board.
 std_board = board()
@@ -209,21 +229,21 @@ class puzzle:
         init_configuration_list (list, optional): A list of piece configurations which start the puzzle. This will be augmented using the .try_configuration() method.
     """
 
-    def __init__(self, init_configuration_list = [], pieces_to_place = [], board = std_board):
+    def __init__(self, init_configuration_list = [], pieces_to_place = [], board = board()):
 
         # Set the initial status of the puzzle.
         self.board = board
-        self.status = self.board.shape
+        self.state = self.board.shape
 
         # Initialise the solution list (a list of configurations.)
         self.solution = []
 
         # Attempt to place initial configuration elements.
         for config in init_configuration_list:
-            
+
             # Check so see if the board configurations match.
-            if config.board != self.board:
-                raise ValueError("Board of configuration does not match puzzle board.")
+            #if config.board != self.board:
+            #    raise ValueError("Board of configuration does not match puzzle board.")
 
             # Apply the try_config and if false, then we know the init config
             # cannot fit.
@@ -244,23 +264,18 @@ class puzzle:
         # Initialise the 'solved' variable to False.
         success = False
 
-        # Apply the rotations and the transpositions.
-        matrix_after_flip = flip(configuration.piece.shape, configuration.flip)
-        matrix_after_rot = rotate_matrix(matrix_after_flip, configuration.rot)
-
         # Attempt to place the matrix into puzzle.
-        after_add = add_matrix(matrix_after_rot, self.status, configuration.row, configuration.col)
+        after_add = add_matrix(configuration.piecestate.shape, self.state, configuration.row, configuration.col)
 
         # Check that there are no collisions.
         arr = np.array(after_add.flatten())[0]
         if not(set([2]).issubset(set(arr))):
             # If there are no collisions then we return the puzzle status.
-            self.status = after_add
+            self.state = after_add
             # Note that the placement was successful.
             success = True
 
         return success
-
 
     def check_filled(self):
         """Check that the board is completely filled. Takes no arguments.
@@ -270,3 +285,6 @@ class puzzle:
             return False
         else:
             return True
+
+    def __str__(self):
+        return self.state.__str__()
