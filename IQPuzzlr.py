@@ -288,3 +288,8 @@ class puzzle:
 
     def __str__(self):
         return self.state.__str__()
+
+##### With intentions to add a .solve method to a puzzle, we want to be able to specify the method. As such we're going to create a new class called solve_method which contains a recursive function which successively suggests configurations for unplaced pieces.
+class solve_method:
+    """A class specifying the solve method, a recursive function taking a puzzle state.
+    """
