@@ -1,6 +1,7 @@
 import numpy as np
 import copy as cp
 import time
+import inspect
 
 checked_module = True
 
@@ -332,11 +333,15 @@ class puzzle:
             # If there are no collisions then we return the puzzle status.
             if in_place:
                 self.state = after_add
+                self.pieces_to_place.remove(configuration.piece)
 
                 return success
             elif not(in_place):
+                new_pieces_to_place = pieces_to_place[:]
+                new_pieces_to_place.remove(configuration.piece)
+
                 # If not in place, return the new state.
-                return success, after_add
+                return success, after_add, new_pieces_to_place
         else:
             return success # NB success = false here.
 
@@ -393,7 +398,8 @@ class puzzle:
                     if self.try_configuration(config, in_place = False):
                         moves.append(config)
 
-        return moves
+        move_and_pieces_to_return = [(moveconfig, cp.copy(self.pieces_to_place).remove(moveconfig.piece)) for moveconfig in moves]
+        return move_and_pieces_to_return 
         ## USE THE HOLES OF THE PUZZLE TO LOCATE POSSIBLE MOVES.
         # THEN FILTER THOSE MOVES IF THEY DON'T ACTUALLY FIT
 
@@ -417,7 +423,7 @@ class puzzle:
         # Define the recursive looping function.
         def recursor(state, remaining_pieces, configlist = []):
             for config in method.function(state, remaining_pieces):
-                try_configuration(config, in_place = False)
+                new_state = try_configuration(config, in_place = False)
                 if self.check_filled():
                     unsolved = False
                 if unsolved:
@@ -431,10 +437,30 @@ class puzzle:
 
 ##### With intentions to add a .solve method to a puzzle, we want to be able to specify the method. As such we're going to create a new class called solve_method which contains a recursive function which successively suggests configurations for unplaced pieces.
 class solve_method:
-    """A class specifying the solve method, a recursive function taking a puzzle state.
+    """A class specifying the solve method, a function taking in a puzzle state and a possible set of move
 
     Args:
-        placement_returner: A function taking in a board state and pieces to place and returning a list of moves to try.
+        placement_returner: A function taking the following arguments:
+        List_of_moves: List of configurations representing possible moves.
+        List_of_pieces: List of pieces still needing to be placed.
+
     """
-    def __init__(self, function):
+    def __init__(self, function, initialiser = None):
+        self.initialise = initialiser
         self.function = function
+
+        ### Need to implement an arg check at some point to make sure its working.
+
+
+##### BRUTE FORCE DETAILS
+def brute_force_initialiser():
+    global move_count
+    move_count = 0
+
+def brute_force_func(list_of_configs, list_of_pieces):
+    global move_count
+    list_to_return =  list(range(depth, len(liste) + depth))
+    depth = depth + len(liste)
+    return list_to_return
+
+brute_force = solve_method(brute_force_func, brute_force_initialiser)
