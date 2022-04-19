@@ -354,7 +354,7 @@ class puzzle:
         else:
             return True
 
-    def get_moves(self, state = None, pieces = None):
+    def get_moves(self, state = None, pieces = None, configs_done = None):
         """Get the moves that can be made in the current state.
 
         Returns: List of valid moves as configurations.
@@ -364,6 +364,8 @@ class puzzle:
             state = self.state
         if pieces == None:
             pieces = self.pieces_to_place
+        if configs_done == None:
+            configs_done = []
 
         # Get the puzzle holes
         holes = self.holes
@@ -398,8 +400,8 @@ class puzzle:
                     if self.try_configuration(config, in_place = False):
                         moves.append(config)
 
-        move_and_pieces_to_return = [(moveconfig, cp.copy(self.pieces_to_place).remove(moveconfig.piece)) for moveconfig in moves]
-        return move_and_pieces_to_return 
+        move_and_pieces_to_return = [(moveconfig, self.try_configuration(moveconfig, False)[1], self.try_configuration(moveconfig, False)[2]) for moveconfig in moves]
+        return move_and_pieces_to_return
         ## USE THE HOLES OF THE PUZZLE TO LOCATE POSSIBLE MOVES.
         # THEN FILTER THOSE MOVES IF THEY DON'T ACTUALLY FIT
 
