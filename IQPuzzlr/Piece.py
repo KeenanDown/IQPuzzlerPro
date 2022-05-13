@@ -1,4 +1,5 @@
 import numpy as np
+from IQPuzzlr.MatFuncs import rotate_matrix, flip_matrix
 
 class piece:
     """A shape which can be used in the iqpuzzler puzzles.

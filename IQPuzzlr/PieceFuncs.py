@@ -1,4 +1,8 @@
 import numpy as np
+from IQPuzzlr.MiscFuncs import check_type
+from IQPuzzlr.Piece import piece
+import IQPuzzlr.MatFuncs
+import copy as cp
 
 def rotate_piece(piece_g, number_of_times = 0):
     """Rotate a numpy matrix a number of times anticlockwise.
@@ -18,7 +22,7 @@ def rotate_piece(piece_g, number_of_times = 0):
     new_piece = cp.copy(piece_g)
 
     # Change the shape.
-    new_piece.shape = rotate_matrix(new_piece.shape, number_of_times)
+    new_piece.shape = IQPuzzlr.MatFuncs.rotate_matrix(new_piece.shape, number_of_times)
 
     # Change the zero location.
     new_piece.nz_location = new_piece.get_nonzero_location()
@@ -50,7 +54,7 @@ def get_moves(state, pieces_to_place, configs_done = None):
 
         for flip, rot in piece_g.valid_flip_rotations:
             # Imagine what the orientation of the piece looks like.
-            test_piece = rotate_piece(piece(flip_matrix(piece_g.shape, flip)), rot).update_metadata()
+            test_piece = IQPuzzlr.MatFuncs.rotate_piece(piece(IQPuzzlr.MatFuncs.flip_matrix(piece_g.shape, flip)), rot).update_metadata()
 
             # Filter holes so we only test that we can actually get the piece on the board.
             viable_holes = list(filter(lambda tup: (0<=(tup[0]-test_piece.nz_location[0]) <= self.board.shape.shape[0]-test_piece.shape.shape[0]) and (0<=(tup[1]-test_piece.nz_location[1])<= self.board.shape.shape[1]-test_piece.shape.shape[1]), holes))

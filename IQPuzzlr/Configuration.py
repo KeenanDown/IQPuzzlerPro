@@ -1,5 +1,9 @@
 import numpy as np
 from IQPuzzlr.Board import board
+from IQPuzzlr.Piece import piece
+from IQPuzzlr.MiscFuncs import check_type
+import IQPuzzlr.PieceFuncs
+import IQPuzzlr.MatFuncs
 
 class configuration:
     """Define a configuration, a data structure containing a board and
@@ -33,16 +37,16 @@ class configuration:
         self.flip = flip
 
         # Rotate the piece.
-        self.rotatedpiece = rotate_piece(self.piece, self.rot)
+        self.rotatedpiece = IQPuzzlr.PieceFuncs.rotate_piece(self.piece, self.rot)
 
         # Flip the piece.
-        self.flippedpiece = piece(flip_matrix(self.piece.shape, self.flip))
+        self.flippedpiece = piece(IQPuzzlr.MatFuncs.flip_matrix(self.piece.shape, self.flip))
 
         # Rotate after flipping the piece.
-        self.piecestate = rotate_piece(self.flippedpiece, self.rot)
+        self.piecestate = IQPuzzlr.PieceFuncs.rotate_piece(self.flippedpiece, self.rot)
 
         # Add the piece to the board and save it.
-        self.state = add_matrix(self.piecestate.shape, self.board.shape, row, col)
+        self.state = IQPuzzlr.MatFuncs.add_matrix(self.piecestate.shape, self.board.shape, row, col)
 
     def __str__(self):
         return self.state.__str__()

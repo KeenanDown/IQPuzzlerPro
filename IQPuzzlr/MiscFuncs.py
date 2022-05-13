@@ -10,7 +10,7 @@ def check_type(object, type_specified):
     Returns:
         bool: Whether or not the objects match.
     """
-    if type(object) != type_specified:
+    if not isinstance(object, type_specified):
         raise TypeError("Type " + str(type(object)) + " should be " + str(type_specified) + ".")
 
     return True

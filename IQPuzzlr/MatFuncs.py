@@ -3,6 +3,7 @@ Various tools for manipulating matrices.
 """
 
 import numpy as np
+import copy as cp
 
 def rotate_matrix(mat, number_of_times):
     """Rotate a numpy matrix a number of times anticlockwise.

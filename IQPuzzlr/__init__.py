@@ -3,13 +3,14 @@ import copy as cp
 import time
 import inspect
 
-from IQPuzzlr import (
-    # Main objects
-    Piece,
-    Board,
-    Configuration,
-    Puzzle,
+# Main objects
+from IQPuzzlr.Piece import piece
+from IQPuzzlr.Board import board
+from IQPuzzlr.Configuration import configuration
+from IQPuzzlr.Puzzle import puzzle
     # Functions
+
+from IQPuzzlr import (
     MatFuncs,
     MiscFuncs,
     PieceFuncs,

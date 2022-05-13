@@ -1,6 +1,8 @@
 import numpy as np
 
 from IQPuzzlr.Board import board
+from IQPuzzlr.PieceFuncs import get_moves
+from IQPuzzlr.MatFuncs import add_matrix
 
 class puzzle:
     """A puzzle that can be attempted. Can be augmented with configurations.
@@ -25,6 +27,9 @@ class puzzle:
         # Initialise the solution list (a list of configurations.)
         self.solution = []
 
+        # Create a list of pieces to place.
+        self.pieces_to_place = pieces_to_place
+
         # Attempt to place initial configuration elements.
         for config in init_configuration_list:
 
@@ -37,9 +42,6 @@ class puzzle:
             if not(self.try_configuration(config)):
                 raise ValueError("Initial configuration does not fit.")
 
-        # Create a list of pieces to place.
-        self.pieces_to_place = pieces_to_place
-
         # Create a list of hole locations.
         self.holes = self.get_holes()
 
@@ -49,7 +51,7 @@ class puzzle:
         """
         self.holes = self.get_holes()
 
-    def try_configuration(self, configuration, in_place = True):
+    def try_configuration(self, config, in_place = True):
         """Place a specified configuration onto the puzzle in place if successful.
 
         Args:
@@ -62,7 +64,7 @@ class puzzle:
         success = False
 
         # Attempt to place the matrix into puzzle.
-        after_add = add_matrix(configuration.piecestate.shape, self.state, configuration.row, configuration.col)
+        after_add = add_matrix(config.piecestate.shape, self.state, config.row, config.col)
 
         # Check that there are no collisions.
         arr = np.array(after_add.flatten())[0]
@@ -72,12 +74,12 @@ class puzzle:
             # If there are no collisions then we return the puzzle status.
             if in_place:
                 self.state = after_add
-                self.pieces_to_place.remove(configuration.piece)
+                self.pieces_to_place.remove(config.piece)
 
                 return success
             elif not(in_place):
                 new_pieces_to_place = pieces_to_place[:]
-                new_pieces_to_place.remove(configuration.piece)
+                new_pieces_to_place.remove(config.piece)
 
                 # If not in place, return the new state.
                 return success, after_add, new_pieces_to_place
