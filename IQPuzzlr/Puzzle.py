@@ -1,8 +1,9 @@
 import numpy as np
 
 from IQPuzzlr.Board import board
-from IQPuzzlr.PieceFuncs import get_moves
-from IQPuzzlr.MatFuncs import add_matrix
+from IQPuzzlr.StateFuncs import get_moves
+from IQPuzzlr.MatFuncs import add_matrix, flip_matrix
+from IQPuzzlr.PieceFuncs import rotate_piece
 
 class puzzle:
     """A puzzle that can be attempted. Can be augmented with configurations.
@@ -32,7 +33,6 @@ class puzzle:
 
         # Attempt to place initial configuration elements.
         for config in init_configuration_list:
-
             # Check so see if the board configurations match.
             #if config.board != self.board:
             #    raise ValueError("Board of configuration does not match puzzle board.")
@@ -41,6 +41,9 @@ class puzzle:
             # cannot fit.
             if not(self.try_configuration(config)):
                 raise ValueError("Initial configuration does not fit.")
+
+        # Create a list of initial configurations.
+        self.configs_done = init_configuration_list
 
         # Create a list of hole locations.
         self.holes = self.get_holes()
@@ -152,7 +155,7 @@ class puzzle:
 
 
 
-    def solve(self, method):
+    def solve(self, method, resolution = 1000):
         """Solves the puzzle using a specified method.
 
         Args:
@@ -163,14 +166,54 @@ class puzzle:
         # Initialise variable to store if solution found.
         unsolved = True
 
-        # Define the recursive looping function.
-        def recursor(state, remaining_pieces, configlist = []):
-            for config in method.function(state, remaining_pieces):
-                new_state = try_configuration(config, in_place = False)
-                if self.check_filled():
-                    unsolved = False
-                if unsolved:
-                    pass
-        # Create the recursive loop.
+        # If there is an initialiser, use it
+        if method.initialiser != None:
+            method.initialiser()
+
+        # Initialise the scoring table list;
+        score_table = []
+
+        # Set the first state.
+        current = (self.state, self.pieces_to_place, self.configs_done)
+
+        # Set a counter.
+        t = 0
+
+        # Create a looping solve
         while unsolved:
-            pass
+            t += 1
+            if t % resolution == 0:
+                print(t)
+
+            # Get the list of next possible moves from current.
+            print(current)
+
+            moves_to_add_unscored = get_moves(current[0], current[1], current[2])
+
+            # Check if any of these solve the problem.
+            for move in moves_to_add_unscored:
+                # If there are no pieces left to place afterwards
+                if move[1] == []:
+
+                    # Then set as current.
+                    current = move
+
+                    # And mark as solved.
+                    unsolved = False
+
+            # Score them and make a list.
+            if unsolved:
+                moves_with_scores = [(move, method.score_function(move[0], move[1], move[2])) for move in moves_to_add_unscored]
+                # Add these elements to a table and remove repeats.
+                score_table = score_table + moves_with_scores
+                #score_table = list(np.unique(score_table))
+                # YOU NEED TO MAKE IT UNIQUE STILL
+                # ALSO YOU NEED TO NOT REPEAT PREVIOUSLY SEEN MOVES
+                # ELSE YOU'LL HAVE AN ETERNAL LOOP.
+                # Sort them by the score
+                score_table = sorted(score_table, key = lambda mov: mov[1])
+                # Set the current as the highest scoring.
+                # Simultaneously remove it from the list.
+                current = score_table.pop()[0]
+
+        return current[2]

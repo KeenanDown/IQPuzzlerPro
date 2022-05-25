@@ -19,7 +19,7 @@ class score_method:
 
     """
     def __init__(self, score_function, initialiser = None):
-        self.initialise = initialiser
+        self.initialiser = initialiser
         self.score_function = score_function
 
         ### Need to implement an arg check at some point to make sure its working.
@@ -29,11 +29,11 @@ class score_method:
 
 def brute_force_initialiser():
     """Initialise the brute force scorer.
+    """
     global move_count
     move_count = 0
-    """
 
-def brute_force_func(config, state, pieces_to_place, configs_done):
+def brute_force_func(state, pieces_to_place, configs_done):
     """The brute force scorer. Scores simply increment by 1 each time, leading to a logicless sweep of all pieces being placed.
     """
     global move_count

@@ -83,3 +83,16 @@ def add_matrix(matrix_to_add, base_matrix, row, col):
     # Add the smaller matrix at the correct location.
     np.add(basemat[row:row+addmat.shape[0], col:col+addmat.shape[1]], addmat, out=basemat[row:row+addmat.shape[0], col:col+addmat.shape[1]], casting="unsafe")
     return basemat
+
+def get_holes(matrix):
+    """Get the hole locations in a matrix.
+
+    Arguments:
+        matrix: np.matrix
+            The matrix where the 0s are the holes.
+    Returns:
+        tuple
+            The list of hole locations.
+    """
+    hole_locations = tuple(zip(*np.where(matrix == 0)))
+    return hole_locations
